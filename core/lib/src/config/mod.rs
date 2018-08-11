@@ -189,6 +189,7 @@ mod config;
 mod builder;
 mod toml_ext;
 mod custom_values;
+mod address;
 
 use std::fs::{self, File};
 use std::collections::HashMap;
@@ -199,7 +200,7 @@ use std::env;
 
 use toml;
 
-pub use self::custom_values::Limits;
+pub use self::custom_values::{Limits, Port};
 pub use toml::value::{Array, Table, Value, Datetime};
 pub use self::error::ConfigError;
 pub use self::environment::Environment;
@@ -207,6 +208,7 @@ pub use self::config::Config;
 pub use self::builder::ConfigBuilder;
 pub use logger::LoggingLevel;
 crate use self::toml_ext::LoggedValue;
+pub use self::address::Address;
 
 use logger;
 use self::Environment::*;
@@ -658,6 +660,16 @@ mod test {
                       "#.to_string(), TEST_CONFIG_FILENAME), {
                           default_config(Development).address("0.0.0.0")
                       });
+
+        #[cfg(unix)]
+        {
+            check_config!(RocketConfig::parse(r#"
+                            [dev]
+                            address = "unix:/tmp/rocket.sock"
+                        "#.to_string(), TEST_CONFIG_FILENAME), {
+                            default_config(Development).address("unix:/tmp/rocket.sock")
+                        });
+        }
     }
 
     #[test]
@@ -685,6 +697,28 @@ mod test {
             [staging]
             address = "1.2.3.4:100"
         "#.to_string(), TEST_CONFIG_FILENAME).is_err());
+
+        #[cfg(unix)]
+        {
+            assert!(RocketConfig::parse(r#"
+                [staging]
+                address = "linux:/tmp/rocket.sock"
+            "#.to_string(), TEST_CONFIG_FILENAME).is_err());
+
+            assert!(RocketConfig::parse(r#"
+                [staging]
+                address = "/tmp/rocket.sock"
+            "#.to_string(), TEST_CONFIG_FILENAME).is_err());
+        }
+
+        #[cfg(windows)]
+        {
+            // No Unix domain socket support for Windows in Rocket yet.
+            assert!(RocketConfig::parse(r#"
+                [staging]
+                address = "unix:/tmp/rocket.sock"
+            "#.to_string(), TEST_CONFIG_FILENAME).is_err());
+        }
     }
 
     // Only do this test when the tls feature is disabled since the file paths
@@ -1098,8 +1132,8 @@ mod test {
         let check_value = |key: &str, val: &str, config: &Config| {
             match key {
                 "log" => assert_eq!(config.log_level, val.parse().unwrap()),
-                "port" => assert_eq!(config.port, val.parse().unwrap()),
-                "address" => assert_eq!(config.address, val),
+                "port" => assert_eq!(*config.port, val.parse().unwrap()),
+                "address" => assert_eq!(&config.address.to_string(), val),
                 "extra_extra" => assert_eq!(config.get_bool(key).unwrap(), true),
                 "workers" => assert_eq!(config.workers, val.parse().unwrap()),
                 _ => panic!("Unexpected key: {}", key)
