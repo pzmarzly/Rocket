@@ -26,7 +26,7 @@ pub mod uri;
 pub mod ext;
 
 #[doc(hidden)]
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 pub mod unix;
 
 #[doc(hidden)]
