@@ -12,13 +12,7 @@ extern crate hyper;
 #[doc(hidden)] pub use self::hyper::server::Handler as Handler;
 
 #[doc(hidden)] pub use self::hyper::net;
-#[doc(hidden)] pub use hyper::method::Method;
-#[doc(hidden)] pub use hyper::status::StatusCode;
-#[doc(hidden)] pub use hyper::error::Error;
-#[doc(hidden)] pub use hyper::uri::RequestUri;
-#[doc(hidden)] pub use hyper::http::h1;
-#[doc(hidden)] pub use hyper::buffer;
-#[doc(hidden)] pub use hyper::Result;
+#[doc(hidden)] pub use self::hyper::Result;
 
 #[doc(hidden)] pub use self::hyper::method::Method;
 #[doc(hidden)] pub use self::hyper::status::StatusCode;
