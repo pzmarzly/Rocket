@@ -11,11 +11,6 @@ use crate::http::private::Key;
 
 use super::custom_values::*;
 use {num_cpus, base64};
-use config::Environment::*;
-use config::{Result, ConfigBuilder, Environment, ConfigError, LoggingLevel};
-use config::{Table, Value, Array, Datetime};
-
-use http::private::Key;
 
 /// Structure for Rocket application configuration.
 ///
